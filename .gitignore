@@ -1,0 +1,13 @@
+
+/.idea
+/*.iml
+/.classpath
+/.project
+/.settings
+.DS_Store
+/*.log
+/log.txt
+/.sass-cache
+# /package-lock.json # unignored, to make it more visible when this file exists
+/.cache
+/.sourcemaps
