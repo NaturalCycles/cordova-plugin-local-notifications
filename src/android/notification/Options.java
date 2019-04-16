@@ -64,7 +64,7 @@ public class Options {
      *      Application context
      */
     public Options(Context context){
-    	this.context = context;
+        this.context = context;
         this.assets  = AssetUtil.getInstance(context);
     }
 
@@ -228,7 +228,7 @@ public class Options {
 
         if (title.isEmpty()) {
             title = context.getApplicationInfo().loadLabel(
-                    context.getPackageManager()).toString();
+                context.getPackageManager()).toString();
         }
 
         return title;
@@ -325,6 +325,10 @@ public class Options {
         String icon = options.optString("smallIcon", "");
 
         return assets.getResIdForDrawable(icon);
+    }
+
+    public String getChannel() {
+        return options.optString("channel");
     }
 
     /**

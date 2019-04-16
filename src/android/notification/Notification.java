@@ -25,14 +25,17 @@ package de.appplant.cordova.plugin.notification;
 
 
 import android.app.AlarmManager;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 
+import org.apache.cordova.LOG;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -43,6 +46,10 @@ import java.util.Date;
  * like show, delete, cancel for a single local notification instance.
  */
 public class Notification {
+
+    public static final String CHANNEL_NAME = "Natural Cycles Reminders";
+    public static final String CHANNEL_DESCRIPTION = "This is Natural Cycles Reminders Channel";
+    private static final String ERROR_TAG = "ERROR";
 
     // Used to differ notifications by their life cycle state
     public enum Type {
@@ -78,7 +85,7 @@ public class Notification {
      *      Pre-configured notification builder
      */
     protected Notification (Context context, Options options,
-                    NotificationCompat.Builder builder, Class<?> receiver) {
+                            NotificationCompat.Builder builder, Class<?> receiver) {
 
         this.context = context;
         this.options = options;
@@ -169,18 +176,13 @@ public class Notification {
 
         // Intent gets called when the Notification gets fired
         Intent intent = new Intent(context, receiver)
-                .setAction(options.getIdStr())
-                .putExtra(Options.EXTRA, options.toString());
+        .setAction(options.getIdStr())
+        .putExtra(Options.EXTRA, options.toString());
 
         PendingIntent pi = PendingIntent.getBroadcast(
-                context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+                                                      context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
 
-        if (isRepeating()) {
-            getAlarmMgr().setRepeating(AlarmManager.RTC_WAKEUP,
-                    triggerTime, options.getRepeatInterval(), pi);
-        } else {
-            getAlarmMgr().set(AlarmManager.RTC_WAKEUP, triggerTime, pi);
-        }
+        getAlarmMgr().setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerTime, pi);
     }
 
     /**
@@ -205,10 +207,10 @@ public class Notification {
      */
     public void cancel() {
         Intent intent = new Intent(context, receiver)
-                .setAction(options.getIdStr());
+        .setAction(options.getIdStr());
 
         PendingIntent pi = PendingIntent.
-                getBroadcast(context, 0, intent, 0);
+        getBroadcast(context, 0, intent, 0);
 
         getAlarmMgr().cancel(pi);
         getNotMgr().cancel(options.getId());
@@ -319,9 +321,28 @@ public class Notification {
     /**
      * Notification manager for the application.
      */
-    private NotificationManager getNotMgr () {
-        return (NotificationManager) context
-                .getSystemService(Context.NOTIFICATION_SERVICE);
+    private NotificationManager getNotMgr() {
+        NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
+
+        if (Build.VERSION.SDK_INT >= 26) {
+            NotificationChannel mChannel = new NotificationChannel(options.getChannel(), CHANNEL_NAME,
+                                                                   NotificationManager.IMPORTANCE_HIGH);
+            mChannel.setDescription(CHANNEL_DESCRIPTION);
+            mChannel.setLockscreenVisibility(android.app.Notification.VISIBILITY_PUBLIC);
+            mChannel.setLightColor(Color.MAGENTA);
+            mChannel.canShowBadge();
+            mChannel.setShowBadge(true);
+
+            try {
+                notificationManager.createNotificationChannel(mChannel);
+            } catch (NullPointerException ex) {
+                LOG.e(ERROR_TAG, ex.toString());
+            }
+
+            return notificationManager;
+        } else {
+            return notificationManager;
+        }
     }
 
     /**

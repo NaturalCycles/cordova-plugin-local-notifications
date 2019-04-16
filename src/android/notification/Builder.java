@@ -29,6 +29,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 
+import com.naturalcycles.cordova.R;
+
 import org.json.JSONObject;
 
 import java.util.Random;
@@ -120,15 +122,17 @@ public class Builder {
         int ledColor  = options.getLedColor();
         NotificationCompat.Builder builder;
 
-        builder = new NotificationCompat.Builder(context)
-                .setDefaults(0)
-                .setContentTitle(options.getTitle())
-                .setContentText(options.getText())
-                .setNumber(options.getBadgeNumber())
-                .setTicker(options.getText())
-                .setAutoCancel(options.isAutoClear())
-                .setOngoing(options.isOngoing())
-                .setColor(options.getColor());
+        builder = new NotificationCompat.Builder(context, options.getChannel())
+            .setDefaults(0)
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setContentTitle(options.getTitle())
+            .setContentText(options.getText())
+            .setNumber(options.getBadgeNumber())
+            .setTicker(options.getText())
+            .setAutoCancel(options.isAutoClear())
+            .setOngoing(options.isOngoing())
+            .setColor(options.getColor());
 
         if (ledColor != 0) {
             builder.setLights(ledColor, 100, 100);
